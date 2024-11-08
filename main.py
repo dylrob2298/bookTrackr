@@ -91,4 +91,24 @@ def returnBook(library, isbn, amount):
     # else: print book not found
     return library
 
-# def searchBook(library, title, author):
+def searchBook(library, title, author):
+    foundBooks = []
+    for isbn in library:
+        book = library[isbn]
+        bookTitle = book['title']
+        bookAuthor = book['author']
+        if title.lower() == bookTitle.lower() and author.lower() == bookAuthor.lower():
+            edition = book["edition"]
+            numAvail = book["numAvailable"]
+            numUnavail = book["numUnavailable"]
+            bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, author, isbn, edition)
+            bookUnavailable = "{0}, {1}, Unavailable, {2}, {3}".format(title, author, isbn, edition)
+            books = [bookAvailable] * numAvail + [bookUnavailable] * numUnavail
+            foundBooks += books
+    if not foundBooks:
+        print("book not found")
+    for book in foundBooks:
+        print(book)
+    return True
+
+
