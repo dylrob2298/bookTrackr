@@ -132,3 +132,23 @@ def searchBookTitle(library, title):
         print(book)
     return True
 
+def searchBookAuthor(library, author):
+    foundBooks = []
+    for isbn in library:
+        book = library[isbn]
+        bookAuthor = book['author']
+        numAvail = book['numAvailable']
+
+        if author.lower() == bookAuthor.lower() and numAvail > 0:
+            title = book['title']
+            edition = book['edition']
+            bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, bookAuthor, isbn, edition)
+            books = [bookAvailable] * numAvail
+            foundBooks += books
+    if not foundBooks:
+        print("no books by author")
+        return False
+    for book in foundBooks:
+        print(book)
+    return True
+
