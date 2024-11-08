@@ -150,4 +150,18 @@ def searchBookISBN(library, isbn):
         foundBooks += books
     return foundBooks
 
+def listAvailableBooks(library):
+    availableBooks = []
+    for isbn in library:
+        book = library[isbn]
+        numAvail = book['numAvailable']
+        if numAvail > 0:
+            title = book['title']
+            author = book['author']
+            edition = book['edition']
+            bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, author, isbn, edition)
+            books = [bookAvailable] * numAvail
+            availableBooks += books
+    return availableBooks
+
 
