@@ -15,8 +15,6 @@ Book (ISBN as key in dict):
 - edition (string)
 """
 
-# theLibrary = {}
-
 class Library:
     def __init__(self, libraryFile):
         self.libraryFile = libraryFile
@@ -92,7 +90,7 @@ class Library:
             if amount <= self.books[isbn]['numAvailable']:
                 self.books[isbn]['numAvailable'] -= amount
                 self.books[isbn]['numUnavailable'] += amount
-                responses.append('{0} of book {1} borrowed'.format(amount, isbn))
+                responses.append(f'{amount} of book {isbn} borrowed')
             else:
                 responses.append('WARNING: No available books')
         else:
@@ -106,7 +104,7 @@ class Library:
             if amount <= self.books[isbn]['numUnavailable']:
                 self.books[isbn]['numUnavailable'] -= amount
                 self.books[isbn]['numAvailable'] += amount
-                responses.append('{0} of book {1} returned'.format(amount, isbn))
+                responses.append(f'{amount} of book {isbn} returned')
             else:
                 responses.append('WARNING: Books already available')
         else:
@@ -124,8 +122,8 @@ class Library:
                 edition = book["edition"]
                 numAvail = book["numAvailable"]
                 numUnavail = book["numUnavailable"]
-                bookAvailable = "{0}, {1}, Available, {2}, {3}".format(bookTitle, bookAuthor, isbn, edition)
-                bookUnavailable = "{0}, {1}, Unavailable, {2}, {3}".format(bookTitle, bookAuthor, isbn, edition)
+                bookAvailable = f"{bookTitle}, {bookAuthor}, Available, {isbn}, {edition}"
+                bookUnavailable = f"{bookTitle}, {bookAuthor}, Unavailable, {isbn}, {edition}"
                 books = [bookAvailable] * numAvail + [bookUnavailable] * numUnavail
                 foundBooks += books
         if not foundBooks:
@@ -145,7 +143,7 @@ class Library:
             if title.lower() in bookTitle.lower() and numAvail > 0:
                 author = book['author']
                 edition = book['edition']
-                bookAvailable = "{0}, {1}, Available, {2}, {3}".format(bookTitle, author, isbn, edition)
+                bookAvailable = f"{bookTitle}, {author}, Available, {isbn}, {edition}"
                 books = [bookAvailable] * numAvail
                 foundBooks += books
         if not foundBooks:
@@ -165,7 +163,7 @@ class Library:
             if author.lower() == bookAuthor.lower() and numAvail > 0:
                 title = book['title']
                 edition = book['edition']
-                bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, bookAuthor, isbn, edition)
+                bookAvailable = f"{title}, {bookAuthor}, Available, {isbn}, {edition}"
                 books = [bookAvailable] * numAvail
                 foundBooks += books
         if not foundBooks:
@@ -183,7 +181,7 @@ class Library:
             author = book['author']
             edition = book['edition']
             numAvail = book['numAvailable']
-            bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, author, isbn, edition)
+            bookAvailable = f"{title}, {author}, Available, {isbn}, {edition}"
             books = [bookAvailable] * numAvail
             foundBooks += books
         if not foundBooks:
@@ -202,7 +200,7 @@ class Library:
                 title = book['title']
                 author = book['author']
                 edition = book['edition']
-                bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, author, isbn, edition)
+                bookAvailable = f"{title}, {author}, Available, {isbn}, {edition}"
                 books = [bookAvailable] * numAvail
                 availableBooks += books
         if not availableBooks:
