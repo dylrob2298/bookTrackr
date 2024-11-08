@@ -55,6 +55,7 @@ def updateLibrary(library):
             file.writelines(books)
 
 def addBook(author, title, isbn, edition, amount):
+    responses = []
     if isbn in theLibrary:
         theLibrary['numAvailable'] += amount
     else:
@@ -65,35 +66,49 @@ def addBook(author, title, isbn, edition, amount):
             "numUnavailable": 0,
             "edition": edition
         }
-    return True
+    responses.append('Added new book {0}'.format(isbn))
+    return responses
 
 def removeBook(isbn, amount):
+    responses = []
     if isbn in theLibrary:
         if amount <= theLibrary[isbn]['numAvailable']:
             theLibrary[isbn]['numAvailable'] -= amount
-        # else: print not enough books
-    # else: print book not found
-    return True
+            responses.append('Removed {0} of book {1}'.format(amount, isbn))
+        else:
+            responses.append('WARNING: Not enough books of {0} to remove'.format(isbn))
+    else:
+        responses.append('WARNING: Book {0} not found'.format(isbn))
+    return responses
 
 def borrowBook(isbn, amount):
+    responses = []
     if isbn in theLibrary:
         if amount <= theLibrary[isbn]['numAvailable']:
             theLibrary[isbn]['numAvailable'] -= amount
             theLibrary[isbn]['numUnavailable'] += amount
-        # else: print not enough available books
-    # else: print book not found
-    return True
+            responses.append('{0} of book {1} borrowed'.format(amount, isbn))
+        else:
+            responses.append('WARNING: No available books')
+    else:
+        responses.append("WARNING: No books found")
+    return responses
 
 def returnBook(isbn, amount):
+    responses = []
     if isbn in theLibrary:
         if amount <= theLibrary[isbn]['numUnavailable']:
             theLibrary[isbn]['numUnavailable'] -= amount
             theLibrary[isbn]['numAvailable'] += amount
-        # else: print books already available
-    # else: print book not found
-    return True
+            responses.append('{0} of book {1} returned'.format(amount, isbn))
+        else:
+            responses.append('WARNING: Books already available')
+    else:
+        responses.append("WARNING: No books found")
+    return responses
 
 def searchBook(title, author):
+    responses = []
     foundBooks = []
     for isbn in theLibrary:
         book = theLibrary[isbn]
@@ -107,9 +122,14 @@ def searchBook(title, author):
             bookUnavailable = "{0}, {1}, Unavailable, {2}, {3}".format(bookTitle, bookAuthor, isbn, edition)
             books = [bookAvailable] * numAvail + [bookUnavailable] * numUnavail
             foundBooks += books
-    return foundBooks
+    if not foundBooks:
+        responses.append("WARNING: No books found")
+    else:
+        responses = foundBooks
+    return responses
 
 def searchBookTitle(title):
+    responses = []
     foundBooks = []
     for isbn in theLibrary:
         book = theLibrary[isbn]
@@ -122,9 +142,14 @@ def searchBookTitle(title):
             bookAvailable = "{0}, {1}, Available, {2}, {3}".format(bookTitle, author, isbn, edition)
             books = [bookAvailable] * numAvail
             foundBooks += books
-    return foundBooks
+    if not foundBooks:
+        responses.append("WARNING: No books found")
+    else:
+        responses = foundBooks
+    return responses
 
 def searchBookAuthor(author):
+    responses = []
     foundBooks = []
     for isbn in theLibrary:
         book = theLibrary[isbn]
@@ -137,9 +162,14 @@ def searchBookAuthor(author):
             bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, bookAuthor, isbn, edition)
             books = [bookAvailable] * numAvail
             foundBooks += books
-    return foundBooks
+    if not foundBooks:
+        responses.append("WARNING: No books found")
+    else:
+        responses = foundBooks
+    return responses
 
 def searchBookISBN(isbn):
+    responses = []
     foundBooks = []
     if isbn in theLibrary:
         book = theLibrary[isbn]
@@ -150,9 +180,14 @@ def searchBookISBN(isbn):
         bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, author, isbn, edition)
         books = [bookAvailable] * numAvail
         foundBooks += books
-    return foundBooks
+    if not foundBooks:
+        responses.append("WARNING: No books found")
+    else:
+        responses = foundBooks
+    return responses
 
 def listAvailableBooks():
+    responses = []
     availableBooks = []
     for isbn in theLibrary:
         book = theLibrary[isbn]
@@ -164,43 +199,52 @@ def listAvailableBooks():
             bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, author, isbn, edition)
             books = [bookAvailable] * numAvail
             availableBooks += books
-    return availableBooks
+    if not availableBooks:
+        responses.append("WARNING: No books found")
+    else:
+        responses = availableBooks
+    return responses
 
 def listAvailableAuthors():
+    responses = []
     availableAuthors = set()
     for isbn in theLibrary:
         book = theLibrary[isbn]
         numAvail = book['numAvailable']
         if numAvail > 0:
             availableAuthors.add(book['author'])
-    return list(availableAuthors)
+    if not availableAuthors:
+        responses.append("WARNING: No available authors found")
+    else:
+        responses = list(availableAuthors)
+    return responses
 
 def processCommands(inputFile):
     with open(inputFile, 'r') as file:
         for line in file:
             command, *args = line.strip().split("*")
-            runCommand(command, args)
+            responses = runCommand(command, args)
 
 def runCommand(command, options):
-    response = ''
+    responses = []
     if command == 'AddBook':
-        addBook(options[0], options[1], options[2], options[3], options[4])
+        responses = addBook(options[0], options[1], options[2], options[3], options[4])
     elif command == 'RemoveBook':
-        removeBook(options[0], options[1])
+        responses = removeBook(options[0], options[1])
     elif command == 'BorrowBook':
-        borrowBook(options[0], options[1])
+        responses = borrowBook(options[0], options[1])
     elif command == 'ReturnBook':
-        returnBook(options[0], options[1])
+        responses = returnBook(options[0], options[1])
     elif command == 'SearchBook':
-        searchBook(options[0], options[1])
+        responses = searchBook(options[0], options[1])
     elif command == 'SearchBookTitle':
-        searchBookTitle(options[0])
+        responses = searchBookTitle(options[0])
     elif command == 'SearchBookAuthor':
-        searchBookAuthor(options[0])
+        responses = searchBookAuthor(options[0])
     elif command == 'SearchBookISBN':
-        searchBookISBN(options[0])
+        responses = searchBookISBN(options[0])
     elif command == 'ListAvailableBooks':
-        listAvailableBooks()
+        responses = listAvailableBooks()
     elif command == 'ListAvailableAuthors':
-        listAvailableAuthors()
-    return
+        responses = listAvailableAuthors()
+    return responses
