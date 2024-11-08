@@ -164,4 +164,11 @@ def listAvailableBooks(library):
             availableBooks += books
     return availableBooks
 
-
+def listAvailableAuthors(library):
+    availableAuthors = set()
+    for isbn in library:
+        book = library[isbn]
+        numAvail = book['numAvailable']
+        if numAvail > 0:
+            availableAuthors.add(book['author'])
+    return list(availableAuthors)
