@@ -51,3 +51,44 @@ def updateLibrary(library):
             bookUnavailable = "{0},{1},false,{2},{3}\n".format(title, author, key, edition)
             books = [bookAvailable] * numAvail + [bookUnavailable] * numUnavail
             file.writelines(books)
+
+def addBook(library, author, title, isbn, edition, amount):
+    if isbn in library:
+        library['numAvailable'] += amount
+    else:
+        library[isbn] = {
+            "title": title,
+            "author": author,
+            "numAvailable": amount,
+            "numUnavailable": 0,
+            "edition": edition
+        }
+    return library
+
+def removeBook(library, isbn, amount):
+    if isbn in library:
+        if amount <= library[isbn]['numAvailable']:
+            library[isbn]['numAvailable'] -= amount
+        # else: print not enough books
+    # else: print book not found
+    return library
+
+def borrowBook(library, isbn, amount):
+    if isbn in library:
+        if amount <= library[isbn]['numAvailable']:
+            library[isbn]['numAvailable'] -= amount
+            library[isbn]['numUnavailable'] += amount
+        # else: print not enough available books
+    # else: print book not found
+    return library
+
+def returnBook(library, isbn, amount):
+    if isbn in library:
+        if amount <= library[isbn]['numUnavailable']:
+            library[isbn]['numUnavailable'] -= amount
+            library[isbn]['numAvailable'] += amount
+        # else: print books already available
+    # else: print book not found
+    return library
+
+# def searchBook(library, title, author):
