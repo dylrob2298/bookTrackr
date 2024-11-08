@@ -251,3 +251,10 @@ def runCommand(inputCommand):
     elif command == 'ListAvailableAuthors':
         responses = listAvailableAuthors()
     return responses
+
+def main():
+    global theLibrary
+    theLibrary = readLibrary('Library.txt')
+    processCommands('input.txt')
+    updateLibrary(theLibrary)
+
