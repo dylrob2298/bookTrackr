@@ -15,6 +15,8 @@ Book (ISBN as key in dict):
 - edition (string)
 """
 
+theLibrary = {}
+
 def readLibrary(libraryFile):
     library = {}
     with open(libraryFile, 'r') as file:
@@ -52,49 +54,49 @@ def updateLibrary(library):
             books = [bookAvailable] * numAvail + [bookUnavailable] * numUnavail
             file.writelines(books)
 
-def addBook(library, author, title, isbn, edition, amount):
-    if isbn in library:
-        library['numAvailable'] += amount
+def addBook(author, title, isbn, edition, amount):
+    if isbn in theLibrary:
+        theLibrary['numAvailable'] += amount
     else:
-        library[isbn] = {
+        theLibrary[isbn] = {
             "title": title,
             "author": author,
             "numAvailable": amount,
             "numUnavailable": 0,
             "edition": edition
         }
-    return library
+    return True
 
-def removeBook(library, isbn, amount):
-    if isbn in library:
-        if amount <= library[isbn]['numAvailable']:
-            library[isbn]['numAvailable'] -= amount
+def removeBook(isbn, amount):
+    if isbn in theLibrary:
+        if amount <= theLibrary[isbn]['numAvailable']:
+            theLibrary[isbn]['numAvailable'] -= amount
         # else: print not enough books
     # else: print book not found
-    return library
+    return True
 
-def borrowBook(library, isbn, amount):
-    if isbn in library:
-        if amount <= library[isbn]['numAvailable']:
-            library[isbn]['numAvailable'] -= amount
-            library[isbn]['numUnavailable'] += amount
+def borrowBook(isbn, amount):
+    if isbn in theLibrary:
+        if amount <= theLibrary[isbn]['numAvailable']:
+            theLibrary[isbn]['numAvailable'] -= amount
+            theLibrary[isbn]['numUnavailable'] += amount
         # else: print not enough available books
     # else: print book not found
-    return library
+    return True
 
-def returnBook(library, isbn, amount):
-    if isbn in library:
-        if amount <= library[isbn]['numUnavailable']:
-            library[isbn]['numUnavailable'] -= amount
-            library[isbn]['numAvailable'] += amount
+def returnBook(isbn, amount):
+    if isbn in theLibrary:
+        if amount <= theLibrary[isbn]['numUnavailable']:
+            theLibrary[isbn]['numUnavailable'] -= amount
+            theLibrary[isbn]['numAvailable'] += amount
         # else: print books already available
     # else: print book not found
-    return library
+    return True
 
-def searchBook(library, title, author):
+def searchBook(title, author):
     foundBooks = []
-    for isbn in library:
-        book = library[isbn]
+    for isbn in theLibrary:
+        book = theLibrary[isbn]
         bookTitle = book['title']
         bookAuthor = book['author']
         if title.lower() == bookTitle.lower() and author.lower() == bookAuthor.lower():
@@ -107,10 +109,10 @@ def searchBook(library, title, author):
             foundBooks += books
     return foundBooks
 
-def searchBookTitle(library, title):
+def searchBookTitle(title):
     foundBooks = []
-    for isbn in library:
-        book = library[isbn]
+    for isbn in theLibrary:
+        book = theLibrary[isbn]
         bookTitle = book['title']
         numAvail = book["numAvailable"]
 
@@ -122,10 +124,10 @@ def searchBookTitle(library, title):
             foundBooks += books
     return foundBooks
 
-def searchBookAuthor(library, author):
+def searchBookAuthor(author):
     foundBooks = []
-    for isbn in library:
-        book = library[isbn]
+    for isbn in theLibrary:
+        book = theLibrary[isbn]
         bookAuthor = book['author']
         numAvail = book['numAvailable']
 
@@ -137,10 +139,10 @@ def searchBookAuthor(library, author):
             foundBooks += books
     return foundBooks
 
-def searchBookISBN(library, isbn):
+def searchBookISBN(isbn):
     foundBooks = []
-    if isbn in library:
-        book = library[isbn]
+    if isbn in theLibrary:
+        book = theLibrary[isbn]
         title = book['title']
         author = book['author']
         edition = book['edition']
@@ -150,10 +152,10 @@ def searchBookISBN(library, isbn):
         foundBooks += books
     return foundBooks
 
-def listAvailableBooks(library):
+def listAvailableBooks():
     availableBooks = []
-    for isbn in library:
-        book = library[isbn]
+    for isbn in theLibrary:
+        book = theLibrary[isbn]
         numAvail = book['numAvailable']
         if numAvail > 0:
             title = book['title']
@@ -164,11 +166,21 @@ def listAvailableBooks(library):
             availableBooks += books
     return availableBooks
 
-def listAvailableAuthors(library):
+def listAvailableAuthors():
     availableAuthors = set()
-    for isbn in library:
-        book = library[isbn]
+    for isbn in theLibrary:
+        book = theLibrary[isbn]
         numAvail = book['numAvailable']
         if numAvail > 0:
             availableAuthors.add(book['author'])
     return list(availableAuthors)
+
+def processCommands(inputFile):
+    with open(inputFile, 'r') as file:
+        for line in file:
+            command, *args = line.strip().split("*")
+
+def runCommand(command, options):
+    if command == 'AddBook':
+        addBook(options[0], options[1], options[2], options[3], options[4])
+    
