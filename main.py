@@ -222,11 +222,14 @@ def listAvailableAuthors():
 def processCommands(inputFile):
     with open(inputFile, 'r') as file:
         for line in file:
-            command, *args = line.strip().split("*")
-            responses = runCommand(command, args)
+            command = line.strip()
+            responses = runCommand(command)
+            for response in responses:
+                print(response)
 
-def runCommand(command, options):
+def runCommand(inputCommand):
     responses = []
+    command, *options = inputCommand.split('*')
     if command == 'AddBook':
         responses = addBook(options[0], options[1], options[2], options[3], options[4])
     elif command == 'RemoveBook':
