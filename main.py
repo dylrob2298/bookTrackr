@@ -101,14 +101,34 @@ def searchBook(library, title, author):
             edition = book["edition"]
             numAvail = book["numAvailable"]
             numUnavail = book["numUnavailable"]
-            bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, author, isbn, edition)
-            bookUnavailable = "{0}, {1}, Unavailable, {2}, {3}".format(title, author, isbn, edition)
+            bookAvailable = "{0}, {1}, Available, {2}, {3}".format(bookTitle, bookAuthor, isbn, edition)
+            bookUnavailable = "{0}, {1}, Unavailable, {2}, {3}".format(bookTitle, bookAuthor, isbn, edition)
             books = [bookAvailable] * numAvail + [bookUnavailable] * numUnavail
             foundBooks += books
     if not foundBooks:
         print("book not found")
+        return False
     for book in foundBooks:
         print(book)
     return True
 
+def searchBookTitle(library, title):
+    foundBooks = []
+    for isbn in library:
+        book = library[isbn]
+        bookTitle = book['title']
+        numAvail = book["numAvailable"]
+
+        if title.lower() in bookTitle.lower() and numAvail > 0:
+            author = book['author']
+            edition = book['edition']
+            bookAvailable = "{0}, {1}, Available, {2}, {3}".format(bookTitle, author, isbn, edition)
+            books = [bookAvailable] * numAvail
+            foundBooks += books
+    if not foundBooks:
+        print("book not found")
+        return False
+    for book in foundBooks:
+        print(book)
+    return True
 
