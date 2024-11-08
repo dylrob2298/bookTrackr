@@ -15,246 +15,250 @@ Book (ISBN as key in dict):
 - edition (string)
 """
 
-theLibrary = {}
+# theLibrary = {}
 
-def readLibrary(libraryFile):
-    library = {}
-    with open(libraryFile, 'r') as file:
-        for line in file:
-            bookTitle, bookAuthor, availability, isbn, edition = line.strip().split(',')
-            bookIsAvailable = availability == "true"
-            if isbn in library:
-                if bookIsAvailable:
-                    library[isbn]["numAvailable"] += 1
+class Library:
+    def __init__(self, libraryFile):
+        self.libraryFile = libraryFile
+        self.books = self.readLibrary()
+
+    def readLibrary(self):
+        library = {}
+        with open(self.libraryFile, 'r') as file:
+            for line in file:
+                bookTitle, bookAuthor, availability, isbn, edition = line.strip().split(',')
+                bookIsAvailable = availability == "true"
+                if isbn in library:
+                    if bookIsAvailable:
+                        library[isbn]["numAvailable"] += 1
+                    else:
+                        library[isbn]["numUnavailable"] += 1
                 else:
-                    library[isbn]["numUnavailable"] += 1
+                    library[isbn] = {
+                        "title": bookTitle,
+                        "author": bookAuthor,
+                        "numAvailable": 1 if bookIsAvailable else 0,
+                        "numUnavailable": 0 if bookIsAvailable else 1,
+                        "edition": edition
+                    }
+        return library
+
+    def updateLibrary(self):
+        with open(self.libraryFile, 'w') as file:
+            for isbn, book in self.books.items():
+                title = book["title"]
+                author = book["author"]
+                edition = book["edition"]
+                numAvail = book["numAvailable"]
+                numUnavail = book["numUnavailable"]
+                bookAvailable = f"{title},{author},true,{isbn},{edition}\n"
+                bookUnavailable = f"{title},{author},false,{isbn},{edition}\n"
+                books = [bookAvailable] * numAvail + [bookUnavailable] * numUnavail
+                file.writelines(books)
+
+    def addBook(self, author, title, isbn, edition, amount):
+        responses = []
+        amount = int(amount)
+        if isbn in self.books:
+            self.books['numAvailable'] += amount
+        else:
+            self.books[isbn] = {
+                "title": title,
+                "author": author,
+                "numAvailable": amount,
+                "numUnavailable": 0,
+                "edition": edition
+            }
+        responses.append(f"Added new book {isbn}")
+        return responses
+
+    def removeBook(self, isbn, amount):
+        responses = []
+        amount = int(amount)
+        if isbn in self.books:
+            if amount <= self.books[isbn]['numAvailable']:
+                self.books[isbn]['numAvailable'] -= amount
+                responses.append(f'Removed {amount} of book {isbn}')
             else:
-                library[isbn] = {
-                    "title": bookTitle,
-                    "author": bookAuthor,
-                    "numAvailable": 1 if bookIsAvailable else 0,
-                    "numUnavailable": 0 if bookIsAvailable else 1,
-                    "edition": edition
-                }
-    return library
+                responses.append('WARNING: Not enough books to remove')
+        else:
+            responses.append('WARNING: Book not found')
+        return responses
 
-def updateLibrary(library):
-    libraryFile = "Library.txt"
-    with open(libraryFile, 'w') as file:
-        # key is the isbn
-        for key in library:
-            book = library[key]
-            title = book["title"]
-            author = book["author"]
-            edition = book["edition"]
+    def borrowBook(self, isbn, amount):
+        responses = []
+        amount = int(amount)
+        if isbn in self.books:
+            if amount <= self.books[isbn]['numAvailable']:
+                self.books[isbn]['numAvailable'] -= amount
+                self.books[isbn]['numUnavailable'] += amount
+                responses.append('{0} of book {1} borrowed'.format(amount, isbn))
+            else:
+                responses.append('WARNING: No available books')
+        else:
+            responses.append("WARNING: No books found")
+        return responses
+
+    def returnBook(self, isbn, amount):
+        responses = []
+        amount = int(amount)
+        if isbn in self.books:
+            if amount <= self.books[isbn]['numUnavailable']:
+                self.books[isbn]['numUnavailable'] -= amount
+                self.books[isbn]['numAvailable'] += amount
+                responses.append('{0} of book {1} returned'.format(amount, isbn))
+            else:
+                responses.append('WARNING: Books already available')
+        else:
+            responses.append("WARNING: No books found")
+        return responses
+
+    def searchBook(self, title, author):
+        responses = []
+        foundBooks = []
+        for isbn in self.books:
+            book = self.books[isbn]
+            bookTitle = book['title']
+            bookAuthor = book['author']
+            if title.lower() == bookTitle.lower() and author.lower() == bookAuthor.lower():
+                edition = book["edition"]
+                numAvail = book["numAvailable"]
+                numUnavail = book["numUnavailable"]
+                bookAvailable = "{0}, {1}, Available, {2}, {3}".format(bookTitle, bookAuthor, isbn, edition)
+                bookUnavailable = "{0}, {1}, Unavailable, {2}, {3}".format(bookTitle, bookAuthor, isbn, edition)
+                books = [bookAvailable] * numAvail + [bookUnavailable] * numUnavail
+                foundBooks += books
+        if not foundBooks:
+            responses.append("WARNING: No books found")
+        else:
+            responses = foundBooks
+        return responses
+
+    def searchBookTitle(self, title):
+        responses = []
+        foundBooks = []
+        for isbn in self.books:
+            book = self.books[isbn]
+            bookTitle = book['title']
             numAvail = book["numAvailable"]
-            numUnavail = book["numUnavailable"]
-            bookAvailable = "{0},{1},true,{2},{3}\n".format(title, author, key, edition)
-            bookUnavailable = "{0},{1},false,{2},{3}\n".format(title, author, key, edition)
-            books = [bookAvailable] * numAvail + [bookUnavailable] * numUnavail
-            file.writelines(books)
 
-def addBook(author, title, isbn, edition, amount):
-    responses = []
-    if isbn in theLibrary:
-        theLibrary['numAvailable'] += amount
-    else:
-        theLibrary[isbn] = {
-            "title": title,
-            "author": author,
-            "numAvailable": amount,
-            "numUnavailable": 0,
-            "edition": edition
-        }
-    responses.append('Added new book {0}'.format(isbn))
-    return responses
-
-def removeBook(isbn, amount):
-    responses = []
-    if isbn in theLibrary:
-        if amount <= theLibrary[isbn]['numAvailable']:
-            theLibrary[isbn]['numAvailable'] -= amount
-            responses.append('Removed {0} of book {1}'.format(amount, isbn))
+            if title.lower() in bookTitle.lower() and numAvail > 0:
+                author = book['author']
+                edition = book['edition']
+                bookAvailable = "{0}, {1}, Available, {2}, {3}".format(bookTitle, author, isbn, edition)
+                books = [bookAvailable] * numAvail
+                foundBooks += books
+        if not foundBooks:
+            responses.append("WARNING: No books found")
         else:
-            responses.append('WARNING: Not enough books of {0} to remove'.format(isbn))
-    else:
-        responses.append('WARNING: Book {0} not found'.format(isbn))
-    return responses
+            responses = foundBooks
+        return responses
 
-def borrowBook(isbn, amount):
-    responses = []
-    if isbn in theLibrary:
-        if amount <= theLibrary[isbn]['numAvailable']:
-            theLibrary[isbn]['numAvailable'] -= amount
-            theLibrary[isbn]['numUnavailable'] += amount
-            responses.append('{0} of book {1} borrowed'.format(amount, isbn))
+    def searchBookAuthor(self, author):
+        responses = []
+        foundBooks = []
+        for isbn in self.books:
+            book = self.books[isbn]
+            bookAuthor = book['author']
+            numAvail = book['numAvailable']
+
+            if author.lower() == bookAuthor.lower() and numAvail > 0:
+                title = book['title']
+                edition = book['edition']
+                bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, bookAuthor, isbn, edition)
+                books = [bookAvailable] * numAvail
+                foundBooks += books
+        if not foundBooks:
+            responses.append("WARNING: No books found")
         else:
-            responses.append('WARNING: No available books')
-    else:
-        responses.append("WARNING: No books found")
-    return responses
+            responses = foundBooks
+        return responses
 
-def returnBook(isbn, amount):
-    responses = []
-    if isbn in theLibrary:
-        if amount <= theLibrary[isbn]['numUnavailable']:
-            theLibrary[isbn]['numUnavailable'] -= amount
-            theLibrary[isbn]['numAvailable'] += amount
-            responses.append('{0} of book {1} returned'.format(amount, isbn))
-        else:
-            responses.append('WARNING: Books already available')
-    else:
-        responses.append("WARNING: No books found")
-    return responses
-
-def searchBook(title, author):
-    responses = []
-    foundBooks = []
-    for isbn in theLibrary:
-        book = theLibrary[isbn]
-        bookTitle = book['title']
-        bookAuthor = book['author']
-        if title.lower() == bookTitle.lower() and author.lower() == bookAuthor.lower():
-            edition = book["edition"]
-            numAvail = book["numAvailable"]
-            numUnavail = book["numUnavailable"]
-            bookAvailable = "{0}, {1}, Available, {2}, {3}".format(bookTitle, bookAuthor, isbn, edition)
-            bookUnavailable = "{0}, {1}, Unavailable, {2}, {3}".format(bookTitle, bookAuthor, isbn, edition)
-            books = [bookAvailable] * numAvail + [bookUnavailable] * numUnavail
-            foundBooks += books
-    if not foundBooks:
-        responses.append("WARNING: No books found")
-    else:
-        responses = foundBooks
-    return responses
-
-def searchBookTitle(title):
-    responses = []
-    foundBooks = []
-    for isbn in theLibrary:
-        book = theLibrary[isbn]
-        bookTitle = book['title']
-        numAvail = book["numAvailable"]
-
-        if title.lower() in bookTitle.lower() and numAvail > 0:
-            author = book['author']
-            edition = book['edition']
-            bookAvailable = "{0}, {1}, Available, {2}, {3}".format(bookTitle, author, isbn, edition)
-            books = [bookAvailable] * numAvail
-            foundBooks += books
-    if not foundBooks:
-        responses.append("WARNING: No books found")
-    else:
-        responses = foundBooks
-    return responses
-
-def searchBookAuthor(author):
-    responses = []
-    foundBooks = []
-    for isbn in theLibrary:
-        book = theLibrary[isbn]
-        bookAuthor = book['author']
-        numAvail = book['numAvailable']
-
-        if author.lower() == bookAuthor.lower() and numAvail > 0:
-            title = book['title']
-            edition = book['edition']
-            bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, bookAuthor, isbn, edition)
-            books = [bookAvailable] * numAvail
-            foundBooks += books
-    if not foundBooks:
-        responses.append("WARNING: No books found")
-    else:
-        responses = foundBooks
-    return responses
-
-def searchBookISBN(isbn):
-    responses = []
-    foundBooks = []
-    if isbn in theLibrary:
-        book = theLibrary[isbn]
-        title = book['title']
-        author = book['author']
-        edition = book['edition']
-        numAvail = book['numAvailable']
-        bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, author, isbn, edition)
-        books = [bookAvailable] * numAvail
-        foundBooks += books
-    if not foundBooks:
-        responses.append("WARNING: No books found")
-    else:
-        responses = foundBooks
-    return responses
-
-def listAvailableBooks():
-    responses = []
-    availableBooks = []
-    for isbn in theLibrary:
-        book = theLibrary[isbn]
-        numAvail = book['numAvailable']
-        if numAvail > 0:
+    def searchBookISBN(self, isbn):
+        responses = []
+        foundBooks = []
+        if isbn in self.books:
+            book = self.books[isbn]
             title = book['title']
             author = book['author']
             edition = book['edition']
+            numAvail = book['numAvailable']
             bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, author, isbn, edition)
             books = [bookAvailable] * numAvail
-            availableBooks += books
-    if not availableBooks:
-        responses.append("WARNING: No books found")
-    else:
-        responses = availableBooks
-    return responses
+            foundBooks += books
+        if not foundBooks:
+            responses.append("WARNING: No books found")
+        else:
+            responses = foundBooks
+        return responses
 
-def listAvailableAuthors():
-    responses = []
-    availableAuthors = set()
-    for isbn in theLibrary:
-        book = theLibrary[isbn]
-        numAvail = book['numAvailable']
-        if numAvail > 0:
-            availableAuthors.add(book['author'])
-    if not availableAuthors:
-        responses.append("WARNING: No available authors found")
-    else:
-        responses = list(availableAuthors)
-    return responses
+    def listAvailableBooks(self):
+        responses = []
+        availableBooks = []
+        for isbn in self.books:
+            book = self.books[isbn]
+            numAvail = book['numAvailable']
+            if numAvail > 0:
+                title = book['title']
+                author = book['author']
+                edition = book['edition']
+                bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, author, isbn, edition)
+                books = [bookAvailable] * numAvail
+                availableBooks += books
+        if not availableBooks:
+            responses.append("WARNING: No books found")
+        else:
+            responses = availableBooks
+        return responses
 
-def processCommands(inputFile):
+    def listAvailableAuthors(self):
+        responses = []
+        availableAuthors = set()
+        for isbn in self.books:
+            book = self.books[isbn]
+            numAvail = book['numAvailable']
+            if numAvail > 0:
+                availableAuthors.add(book['author'])
+        if not availableAuthors:
+            responses.append("WARNING: No available authors found")
+        else:
+            responses = list(availableAuthors)
+        return responses
+
+def processCommands(library, inputFile):
     with open(inputFile, 'r') as file:
         for line in file:
             command = line.strip()
-            responses = runCommand(command)
+            responses = runCommand(library, command)
             for response in responses:
                 print(response)
 
-def runCommand(inputCommand):
-    responses = []
+def runCommand(library, inputCommand):
     command, *options = inputCommand.split('*')
     if command == 'AddBook':
-        responses = addBook(options[0], options[1], options[2], options[3], options[4])
+        return library.addBook(options[0], options[1], options[2], options[3], options[4])
     elif command == 'RemoveBook':
-        responses = removeBook(options[0], options[1])
+        return library.removeBook(options[0], options[1])
     elif command == 'BorrowBook':
-        responses = borrowBook(options[0], options[1])
+        return library.borrowBook(options[0], options[1])
     elif command == 'ReturnBook':
-        responses = returnBook(options[0], options[1])
+        return library.returnBook(options[0], options[1])
     elif command == 'SearchBook':
-        responses = searchBook(options[0], options[1])
+        return library.searchBook(options[0], options[1])
     elif command == 'SearchBookTitle':
-        responses = searchBookTitle(options[0])
+        return library.searchBookTitle(options[0])
     elif command == 'SearchBookAuthor':
-        responses = searchBookAuthor(options[0])
+        return library.searchBookAuthor(options[0])
     elif command == 'SearchBookISBN':
-        responses = searchBookISBN(options[0])
+        return library.searchBookISBN(options[0])
     elif command == 'ListAvailableBooks':
-        responses = listAvailableBooks()
+        return library.listAvailableBooks()
     elif command == 'ListAvailableAuthors':
-        responses = listAvailableAuthors()
-    return responses
+        return library.listAvailableAuthors()
+    return []
 
 def main():
-    global theLibrary
-    theLibrary = readLibrary('Library.txt')
-    processCommands('input.txt')
-    updateLibrary(theLibrary)
+    library = Library('Library.txt')
+    processCommands(library, 'input.txt')
+    library.updateLibrary()
 
