@@ -179,8 +179,28 @@ def processCommands(inputFile):
     with open(inputFile, 'r') as file:
         for line in file:
             command, *args = line.strip().split("*")
+            runCommand(command, args)
 
 def runCommand(command, options):
+    response = ''
     if command == 'AddBook':
         addBook(options[0], options[1], options[2], options[3], options[4])
-    
+    elif command == 'RemoveBook':
+        removeBook(options[0], options[1])
+    elif command == 'BorrowBook':
+        borrowBook(options[0], options[1])
+    elif command == 'ReturnBook':
+        returnBook(options[0], options[1])
+    elif command == 'SearchBook':
+        searchBook(options[0], options[1])
+    elif command == 'SearchBookTitle':
+        searchBookTitle(options[0])
+    elif command == 'SearchBookAuthor':
+        searchBookAuthor(options[0])
+    elif command == 'SearchBookISBN':
+        searchBookISBN(options[0])
+    elif command == 'ListAvailableBooks':
+        listAvailableBooks()
+    elif command == 'ListAvailableAuthors':
+        listAvailableAuthors()
+    return
