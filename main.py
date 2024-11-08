@@ -58,7 +58,7 @@ class Library:
         responses = []
         amount = int(amount)
         if isbn in self.books:
-            self.books['numAvailable'] += amount
+            self.books[isbn]['numAvailable'] += amount
         else:
             self.books[isbn] = {
                 "title": title,
