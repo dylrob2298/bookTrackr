@@ -105,12 +105,7 @@ def searchBook(library, title, author):
             bookUnavailable = "{0}, {1}, Unavailable, {2}, {3}".format(bookTitle, bookAuthor, isbn, edition)
             books = [bookAvailable] * numAvail + [bookUnavailable] * numUnavail
             foundBooks += books
-    if not foundBooks:
-        print("book not found")
-        return False
-    for book in foundBooks:
-        print(book)
-    return True
+    return foundBooks
 
 def searchBookTitle(library, title):
     foundBooks = []
@@ -125,12 +120,7 @@ def searchBookTitle(library, title):
             bookAvailable = "{0}, {1}, Available, {2}, {3}".format(bookTitle, author, isbn, edition)
             books = [bookAvailable] * numAvail
             foundBooks += books
-    if not foundBooks:
-        print("book not found")
-        return False
-    for book in foundBooks:
-        print(book)
-    return True
+    return foundBooks
 
 def searchBookAuthor(library, author):
     foundBooks = []
@@ -145,10 +135,19 @@ def searchBookAuthor(library, author):
             bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, bookAuthor, isbn, edition)
             books = [bookAvailable] * numAvail
             foundBooks += books
-    if not foundBooks:
-        print("no books by author")
-        return False
-    for book in foundBooks:
-        print(book)
-    return True
+    return foundBooks
+
+def searchBookISBN(library, isbn):
+    foundBooks = []
+    if isbn in library:
+        book = library[isbn]
+        title = book['title']
+        author = book['author']
+        edition = book['edition']
+        numAvail = book['numAvailable']
+        bookAvailable = "{0}, {1}, Available, {2}, {3}".format(title, author, isbn, edition)
+        books = [bookAvailable] * numAvail
+        foundBooks += books
+    return foundBooks
+
 
