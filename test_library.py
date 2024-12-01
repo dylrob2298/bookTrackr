@@ -10,7 +10,6 @@ def sample_library(tmp_path):
         "Around the World in Eighty Days,Jules Verne,false,9783401717005,1\n"
         "TestBook,TestAuthor,true,123456,Edition1\n"
         "TestBook,TestAuthor,true,123456,Edition1\n"
-
     )
     return Library(str(library_file))
 
@@ -118,8 +117,9 @@ def test_list_no_available_books_TC21(tmp_path):
 def test_list_available_authors_TC22(sample_library):
     response = runCommand(sample_library, "ListAvailableAuthors")
     assert len(response) > 0
-    assert len(response) == 1
+    assert len(response) == 2
     assert "Jules Verne" in response
+    assert "TestAuthor" in response
 
 def test_list_no_available_authors_TC23(tmp_path):
     library_file = tmp_path / "EmptyLibrary.txt"
