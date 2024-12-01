@@ -1,5 +1,5 @@
 import pytest
-from library import Library, runCommand, main
+from library import Library, runCommand, main, processCommands
 
 @pytest.fixture
 def sample_library(tmp_path):
@@ -8,6 +8,9 @@ def sample_library(tmp_path):
     library_file.write_text(
         "Around the World in Eighty Days,Jules Verne,true,9783401717005,1\n"
         "Around the World in Eighty Days,Jules Verne,false,9783401717005,1\n"
+        "TestBook,TestAuthor,true,123456,Edition1\n"
+        "TestBook,TestAuthor,true,123456,Edition1\n"
+
     )
     return Library(str(library_file))
 
@@ -103,6 +106,7 @@ def test_list_available_books_TC20(sample_library):
     response = runCommand(sample_library, "ListAvailableBooks")
     assert len(response) > 0
     assert "Around the World in Eighty Days" in response[0]
+    assert "TestBook" in response[1]
 
 def test_list_no_available_books_TC21(tmp_path):
     library_file = tmp_path / "EmptyLibrary.txt"
@@ -164,3 +168,69 @@ def test_main_TC24(tmp_path, monkeypatch):
 
     # Check if the new book was added to the content
     assert "Author3,Book3,true,1234567890348,1" in updated_content
+
+# Test cycle 3
+
+def test_list_no_available_books_all_borrowed_TC25(tmp_path):
+    library_file = tmp_path / "EmptyLibrary.txt"
+    library_file.write_text("Book1,Author1,false,1234567890123,1\n")  # No books available
+    empty_library = Library(str(library_file))
+    response = runCommand(empty_library, "ListAvailableBooks")
+    assert "WARNING: No books found" in response
+
+def test_list_no_available_authors_all_borrowed_TC26(tmp_path):
+    library_file = tmp_path / "EmptyLibrary.txt"
+    library_file.write_text("Book1,Author1,false,1234567890123,1\n")  # No books available
+    empty_library = Library(str(library_file))
+    response = runCommand(empty_library, "ListAvailableAuthors")
+    assert "WARNING: No available authors found" in response
+
+def test_invalid_command_TC27(sample_library):
+    response = runCommand(sample_library, "invalidCommand*this*wont*work")
+    assert response == []
+
+@pytest.fixture
+def setup_library_and_commands(tmp_path):
+    # Create Library.txt
+    library_file = tmp_path / "Library.txt"
+    library_file.write_text(
+        "Around the World in Eighty Days,Jules Verne,true,9783401717005,1\n"
+    )
+    
+    # Create input.txt
+    input_file = tmp_path / "input.txt"
+    input_file.write_text(
+        "AddBook*Jules Verne*Journey to the Center of the Earth*9780451530707*1*1\n"
+        "BorrowBook*9783401717005*1\n"
+        "ReturnBook*9783401717005*1\n"
+        "RemoveBook*9780451530707*1\n"
+        "SearchBook*Jules Verne*Around the World in Eighty Days\n"
+        "ListAvailableBooks\n"
+        "ListAvailableAuthors\n"
+    )
+    return str(library_file), str(input_file)
+
+
+def test_processCommands_TC28(capsys, setup_library_and_commands):
+    library_file, input_file = setup_library_and_commands
+    library = Library(library_file)
+
+    # Run processCommands
+    processCommands(library, input_file)
+
+    # Capture the printed output
+    captured = capsys.readouterr().out.strip()
+
+    # Expected output
+    expected_output = (
+        "Added new book 9780451530707\n"
+        "1 of book 9783401717005 borrowed\n"
+        "1 of book 9783401717005 returned\n"
+        "Removed 1 of book 9780451530707\n"
+        "Around the World in Eighty Days, Jules Verne, Available, 9783401717005, 1\n"
+        "Around the World in Eighty Days, Jules Verne, Available, 9783401717005, 1\n"
+        "Jules Verne"
+    )
+
+    # Check if the output matches
+    assert captured == expected_output
