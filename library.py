@@ -111,7 +111,7 @@ class Library:
             responses.append("WARNING: No books found")
         return responses
 
-    def searchBook(self, title, author):
+    def searchBook(self, author, title):
         responses = []
         foundBooks = []
         for isbn in self.books:
