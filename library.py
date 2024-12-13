@@ -89,7 +89,6 @@ class Library:
         if isbn in self.books:
             if amount <= self.books[isbn]['numAvailable']:
                 self.books[isbn]['numAvailable'] -= amount
-                self.books[isbn]['numUnavailable'] += amount
                 responses.append(f'{amount} of book {isbn} borrowed')
             else:
                 responses.append('WARNING: No available books')
@@ -127,7 +126,7 @@ class Library:
                 books = [bookAvailable] * numAvail + [bookUnavailable] * numUnavail
                 foundBooks += books
         if not foundBooks:
-            responses.append("WARNING: No books found")
+            return responses
         else:
             responses = foundBooks
         return responses
@@ -160,7 +159,7 @@ class Library:
             bookAuthor = book['author']
             numAvail = book['numAvailable']
 
-            if author.lower() == bookAuthor.lower() and numAvail > 0:
+            if author == bookAuthor and numAvail > 0:
                 title = book['title']
                 edition = book['edition']
                 bookAvailable = f"{title}, {bookAuthor}, Available, {isbn}, {edition}"
